@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hub Celulose I4.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Bem-vindo</h2>
+            <p>Hub de Ferramentas - Painel Admin</p>
+        </div>
+        
+        <form class="login-form" onsubmit="event.preventDefault(); fazerLogin();">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="user" placeholder="Usuário" required>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="pass" placeholder="Senha" required>
+            </div>
+            
+            <button type="submit" class="btn">Entrar <i class="fas fa-arrow-right"></i></button>
+            <p id="msg-erro">Acesso Negado. Verifique usuário e senha.</p>
+        </form>
+    </div>
+
+    <script>
+        async function fazerLogin() {
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+            const msgErro = document.getElementById('msg-erro');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ usuario: user, senha: pass })
+                });
+
+                if (res.ok) {
+                    localStorage.setItem('admin_logado', user);
+                    window.location.href = 'admin.html';
+                } else {
+                    msgErro.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                alert('Erro na conexão com o servidor.');
+            }
+        }
+    </script>
+</body>
+</html>

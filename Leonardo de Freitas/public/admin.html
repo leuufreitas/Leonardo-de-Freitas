@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Celulose I4.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos para as Tabelas de Gestão */
+        .management-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .management-table th, .management-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .management-table th {
+            background-color: #2e7d32;
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        .btn-delete {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-delete:hover { background: #b71c1c; }
+        
+        .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 10px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+        .icon-option { cursor: pointer; font-size: 1.2rem; text-align: center; padding: 10px; border-radius: 5px; background: white; border: 2px solid transparent; transition: 0.2s; }
+        .icon-option:hover { background: #e8f5e9; }
+        .icon-option.selected { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3>Painel Celulose I4.0</h3>
+                <p id="nome-usuario-display" style="font-size: 0.85rem; opacity: 0.9;"></p>
+            </div>
+            <div class="sidebar-menu">
+                <a id="menu-ferramentas" class="menu-item active" onclick="mostrarTela('ferramentas')">
+                    <i class="fas fa-plus-circle"></i><span>Ferramentas</span>
+                </a>
+                <a id="menu-admins" class="menu-item" onclick="mostrarTela('admins')">
+                    <i class="fas fa-user-shield"></i><span>Administradores</span>
+                </a>
+                <a class="menu-item" href="index.html">
+                    <i class="fas fa-external-link-alt"></i><span>Ver Hub Público</span>
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="btn" style="background-color: rgba(255,255,255,0.2);"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </nav>
+
+        <main class="content-area" id="main-content"></main>
+    </div>
+
+    <script>
+        const usuarioLogado = localStorage.getItem('admin_logado');
+        if (!usuarioLogado) { window.location.href = 'login.html'; }
+        document.getElementById('nome-usuario-display').innerText = `Usuário: ${usuarioLogado}`;
+
+        const capasPadrao = {
+            "Dashboard": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
+            "PI": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800",
+            "Manutenção": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800",
+            "Metris": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800"
+        };
+
+        const listaIcones = ['fa-chart-bar', 'fa-chart-line', 'fa-microchip', 'fa-gears', 'fa-screwdriver-wrench', 'fa-industry', 'fa-server', 'fa-robot'];
+        let iconeSelecionado = 'fa-gear';
+
+        function logout() { localStorage.removeItem('admin_logado'); window.location.href = 'login.html'; }
+
+        async function mostrarTela(tela) {
+            const main = document.getElementById('main-content');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+
+            if (tela === 'ferramentas') {
+                document.getElementById('menu-ferramentas').classList.add('active');
+                main.innerHTML = `
+                    <div class="card-form">
+                        <h2><i class="fas fa-wrench"></i> Cadastrar Nova Ferramenta</h2>
+                        <form onsubmit="cadastrarFerramenta(event)">
+                            <div class="form-group"><label>Nome</label><input type="text" id="nome_f" required></div>
+                            <div class="form-group"><label>Tipo</label>
+                                <select id="tipo_f">
+                                    <option value="Dashboard">Dashboard / BI</option>
+                                    <option value="PI">PI</option>
+                                    <option value="Manutenção">Manutenção</option>
+                                    <option value="Metris">Metris</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Ícone</label>
+                                <div class="icon-grid">${listaIcones.map(i => `<div class="icon-option" onclick="selecionarIcone('${i}', this)"><i class="fas ${i}"></i></div>`).join('')}</div>
+                            </div>
+                            <div class="form-group"><label>Link (URL)</label><input type="text" id="link_f" required></div>
+                            <div class="form-group"><label>Descrição</label><textarea id="desc_f"></textarea></div>
+                            <button type="submit" class="btn">Salvar Ferramenta</button>
+                        </form>
+                    </div>
+                    <div id="lista-ferramentas"></div>
+                `;
+                carregarListaFerramentas();
+            } else {
+                document.getElementById('menu-admins').classList.add('active');
+                main.innerHTML = `
+                    <div class="card-form">
+                        <h2><i class="fas fa-user-shield"></i> Novo Administrador</h2>
+                        <div class="form-group"><label>Usuário</label><input type="text" id="novo-admin-nome"></div>
+                        <div class="form-group"><label>Senha</label><input type="password" id="novo-admin-senha"></div>
+                        <button onclick="cadastrarAdmin()" class="btn">Criar Acesso</button>
+                    </div>
+                    <div id="lista-admins"></div>
+                `;
+                carregarListaAdmins();
+            }
+        }
+
+        function selecionarIcone(icon, el) {
+            iconeSelecionado = icon;
+            document.querySelectorAll('.icon-option').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        // Lógica de Ferramentas
+        async function cadastrarFerramenta(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('tipo_f').value;
+            const dados = {
+                nome: document.getElementById('nome_f').value,
+                link: document.getElementById('link_f').value,
+                tipo: tipo,
+                descricao: document.getElementById('desc_f').value,
+                icone: iconeSelecionado,
+                capa: capasPadrao[tipo]
+            };
+            await fetch('/api/ferramentas', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dados) });
+            alert("Ferramenta cadastrada!");
+            mostrarTela('ferramentas');
+        }
+
+        async function carregarListaFerramentas() {
+            const res = await fetch('/api/ferramentas');
+            const dados = await res.json();
+            document.getElementById('lista-ferramentas').innerHTML = `
+                <table class="management-table">
+                    <thead><tr><th>Nome</th><th>Tipo</th><th>Ações</th></tr></thead>
+                    <tbody>${dados.map(f => `<tr><td>${f.nome}</td><td>${f.tipo}</td><td><button class="btn-delete" onclick="excluirFerramenta(${f.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody>
+                </table>`;
+        }
+
+        async function excluirFerramenta(id) {
+            if(confirm("Deseja excluir esta ferramenta?")) {
+                await fetch(`/api/ferramentas/${id}`, { method: 'DELETE' });
+                carregarListaFerramentas();
+            }
+        }
+
+        // Lógica de Admins
+        async function cadastrarAdmin() {
+            const nome = document.getElementById('novo-admin-nome').value;
+            const senha = document.getElementById('novo-admin-senha').value;
+            if(!nome || !senha) return alert("Preencha tudo!");
+            await fetch('/api/usuarios', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ novoAdmin: nome, novaSenha: senha }) });
+            alert("Admin cadastrado!");
+            mostrarTela('admins');
+        }
+
+        async function carregarListaAdmins() {
+            const res = await fetch('/api/usuarios');
+            const dados = await res.json();
+            document.getElementById('lista-admins').innerHTML = `
+                <table class="management-table">
+                    <thead><tr><th>Usuário</th><th>Ações</th></tr></thead>
+                    <tbody>${dados.map(u => `<tr><td>${u.usuario}</td><td>${u.usuario !== 'admin' ? `<button class="btn-delete" onclick="excluirAdmin(${u.id})"><i class="fas fa-trash"></i></button>` : 'Principal'}</td></tr>`).join('')}</tbody>
+                </table>`;
+        }
+
+        async function excluirAdmin(id) {
+            if(confirm("Remover este administrador?")) {
+                await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+                carregarListaAdmins();
+            }
+        }
+
+        mostrarTela('ferramentas');
+    </script>
+</body>
+</html>
