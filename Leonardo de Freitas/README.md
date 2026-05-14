@@ -2,20 +2,20 @@ Hub de Soluções Digitais - Sala 4.0
 
 Este projeto é um centralizador de ferramentas e ativos digitais voltado para o ambiente de Indústria 4.0. Ele permite que colaboradores acessem rapidamente links externos, dashboards e sistemas industriais (como PI e Metris) através de uma interface intuitiva e responsiva.
 
-Funcionalidades Principal
+Funcionalidades Principais
 
-Vitrine de Ativos: Visualização dinâmica de ferramentas cadastradas.
-Busca em Tempo Real: Filtragem instantânea por nome ou categoria.
-Painel Administrativo: Área restrita para gestão de ferramentas e usuários.
-Segurança: Autenticação via login para acesso às funções de CRUD.
-Banco de Dados Local: Persistência de dados utilizando SQLite para maior portabilidade.
+1. Vitrine de Ativos: Visualização dinâmica de ferramentas cadastradas.
+2. Busca em Tempo Real: Filtragem instantânea por nome ou categoria.
+3. Painel Administrativo: Área restrita para gestão de ferramentas e usuários.
+4. Segurança: Autenticação via login para acesso às funções de CRUD.
+5. Banco de Dados Local: Persistência de dados utilizando SQLite para maior portabilidade.
 
 Tecnologias Utilizadas
 
-Back-end: Node.js com Express.
-Banco de Dados: SQLite (com biblioteca sqlite3).
-Front-end: HTML5, CSS3 (Grid e Flexbox) e JavaScript Vanilla.
-Ícones: FontAwesome. 
+1. Back-end: Node.js com Express.
+2. Banco de Dados: SQLite (com biblioteca sqlite3).
+3. Front-end: HTML5, CSS3 (Grid e Flexbox) e JavaScript Vanilla.
+4. Ícones: FontAwesome. 
 
 Pré-requisitos
 
